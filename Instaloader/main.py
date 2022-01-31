@@ -12,10 +12,18 @@ async def main(_, msg):
     if 'instagram.com' not in msg.text:
         return
     status = await msg.reply('Please Wait...', quote=True)
-    pattern = re.compile(r'^(https?:[/][/])?(www\.)?instagram.com[/](p|reel|tv)[/]([A-Za-z0-9-_]+)')
-    try:
+    pattern = re.compile(r'^(https?:[/][/])?(www\.)?instagram.com[/](p|reel|tv|stories)[/]([A-Za-z0-9-_]+)')
+    test = pattern.search(msg.text)
+    checking = test.group(3)
+    if checking == "stories":
+        pattern = re.compile(r'^(https?:[/][/])?(www\.)?instagram.com[/](p|reel|tv|stories)[/]([A-Za-z0-9-_]+)[/]([A-Za-z0-9-_]+)')
+        matches = pattern.search(msg.text)
+        post_id = matches.group(5)
+    else:
         matches = pattern.search(msg.text)
         post_id = matches.group(4)
+    try:
+        
         username, password = await get_info(msg.from_user.id)
         if not username:
             username = INSTA_USERNAME
