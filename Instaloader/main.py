@@ -41,7 +41,9 @@ async def main(_, msg):
         id_int = int(p_ids)
         for story in L.get_stories(userids=[id_int]):
         # story is a Story object
-        #print(story)
+            pattern32 = re.compile(r'^<Story by [A-Za-z0-9-_]+ changed ([A-Za-z0-9-_]+)>')
+            mat = pattern32.search(str(story))
+            utc = mat.group(1)
             for items in story.get_items():
                 # item is a StoryItem object
                 pattern2 = re.compile(r'^<StoryItem ([A-Za-z0-9-_]+)>')
@@ -50,21 +52,19 @@ async def main(_, msg):
                 print(media_id)
                 
                 if media_id == p_id :
-                    f = L.download_storyitem(items, ':stories')
-                    pattern_link = re.compile(r'^:stories[/]([A-Za-z0-9-_]+).(jpg|mp4)')
-                    matches_link = pattern_link.search(str(f))
-                    p_user = matches_link.group(1)
-                    p_id = matches_link.group(2)
-                    ps = p_user+'.'+p_id
-                    path = ":stories/"+ps
-                    photos, videos, caption = post_prep(path)
-                    if photos:
-                        for photo in photos:
-                            await msg.reply_photo(photo)
-                    if videos:
-                        for video in videos:
-                            await msg.reply_video(video)
-                    #print(f)
+                    L.download_storyitem(items,utc)
+                    files = os.listdir(utc)
+                    for file in files:
+                        if file.endswith(".jpg"):
+                            print("--------------------")
+                           # print(utc+'/'+file)
+                            msg.reply_photo(f"{utc}/{file}", "@masoudartwork")
+                            print("--------------------")
+                        if file.endswith(".mp4"):
+                            print("--------------------")
+                            msg.reply_video(f"{utc}/{file}", "@masoudartwork")
+                            print("--------------------")
+                    shutil.rmtree(utc)
                     break
     
     try:
