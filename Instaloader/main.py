@@ -17,6 +17,8 @@ async def main(_, msg):
     matches = pattern.search(msg.text)
     type_link = matches.group(3)
     if type_link == 'stories':
+        status = await msg.reply('Please Wait for get story ...', quote=True)
+
         pattern_link = re.compile(r'^(https?:[/][/])?(www\.)?instagram.com[/](p|reel|tv|stories)[/]([A-Za-z0-9-_]+)[/]([A-Za-z0-9-_]+)')
         matches_link = pattern_link.search(str(msg.text))
         p_user = matches_link.group(4)
@@ -53,8 +55,8 @@ async def main(_, msg):
                     matches_link = pattern_link.search(str(f))
                     p_user = matches_link.group(1)
                     p_id = matches_link.group(2)
-                    ps = p_user+p_id
-                    path = f":stories/{ps}"
+                    ps = p_user+'.'+p_id
+                    path = ":stories/"+ps
                     photos, videos, caption = post_prep(path)
                     if photos:
                         for photo in photos:
