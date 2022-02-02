@@ -13,60 +13,7 @@ async def main(_, msg):
     if 'instagram.com' not in msg.text:
         return
     status = await msg.reply('Please Wait...', quote=True)
-    pattern = re.compile(r'^(https?:[/][/])?(www\.)?instagram.com[/](p|reel|tv|stories)[/]([A-Za-z0-9-_]+)')
-    matches = pattern.search(msg.text)
-    type_link = matches.group(3)
-    if type_link == 'stories':
-        status = await msg.reply('Please Wait for get story ...', quote=True)
-
-        pattern_link = re.compile(r'^(https?:[/][/])?(www\.)?instagram.com[/](p|reel|tv|stories)[/]([A-Za-z0-9-_]+)[/]([A-Za-z0-9-_]+)')
-        matches_link = pattern_link.search(str(msg.text))
-        p_user = matches_link.group(4)
-        p_id = matches_link.group(5)
-        username, password = await get_info(msg.from_user.id)
-        if not username:
-            username = INSTA_USERNAME
-            password = INSTA_PASSWORD
-        
-        L = instaloader.Instaloader() 
-        L.login(user=username,passwd=password)
-        profilee = Profile.from_username(L.context,p_user)
-
-        pattern = re.compile(r'^<Profile ([A-Za-z0-9-_]+) [(]([A-Za-z0-9-_]+)[)]>')
-        matches = pattern.search(str(profilee))
-        #p_user = matches.group(1)
-        p_ids = matches.group(2)
-
-        #stories = 
-        id_int = int(p_ids)
-        for story in L.get_stories(userids=[id_int]):
-        # story is a Story object
-            pattern32 = re.compile(r'^<Story by [A-Za-z0-9-_]+ changed ([A-Za-z0-9-_]+)>')
-            mat = pattern32.search(str(story))
-            utc = mat.group(1)
-            for items in story.get_items():
-                # item is a StoryItem object
-                pattern2 = re.compile(r'^<StoryItem ([A-Za-z0-9-_]+)>')
-                mat = pattern2.search(str(items))
-                media_id = mat.group(1)
-                print(media_id)
-                
-                if media_id == p_id :
-                    L.download_storyitem(items,utc)
-                    files = os.listdir(utc)
-                    for file in files:
-                        if file.endswith(".jpg"):
-                            print("--------------------")
-                           # print(utc+'/'+file)
-                            msg.reply_photo(f"{utc}/{file}", "@masoudartwork")
-                            print("--------------------")
-                        if file.endswith(".mp4"):
-                            print("--------------------")
-                            msg.reply_video(f"{utc}/{file}", "@masoudartwork")
-                            print("--------------------")
-                    shutil.rmtree(utc)
-                    break
-    
+    pattern = re.compile(r'^(https?:[/][/])?(www\.)?instagram.com[/](p|reel|tv)[/]([A-Za-z0-9-_]+)')
     try:
         matches = pattern.search(msg.text)
         post_id = matches.group(4)
@@ -103,6 +50,8 @@ async def main(_, msg):
             if videos:
                 for video in videos:
                     await msg.reply_video(video, caption)
+                    print(video)
+
         else:
             if photos:
                 for photo in photos:
@@ -110,6 +59,7 @@ async def main(_, msg):
             if videos:
                 for video in videos:
                     await msg.reply_video(video)
+                    print(video)
             if caption:
                 await msg.reply(f"**POST CAPTION : **\n\n{caption} \n\nBy @masoudartwork")
         await status.delete()
@@ -118,7 +68,63 @@ async def main(_, msg):
         await status.delete()
         await msg.reply(error)
 
+@Client.on_message(filters.private & ~filters.regex(r'^/'))
+async def main(_, msg):
+  if 'instagram.com/stories' not in msg.text:
+        return
+  await msg.reply('Please Wait...')
+  pattern_link = re.compile(r'^(https?:[/][/])?(www\.)?instagram.com[/](stories)[/]([A-Za-z0-9-_]+)[/]([A-Za-z0-9-_]+)')
+  matches_link = pattern_link.search(str(msg.text))
+  p_user = matches_link.group(4)
+  p_id = matches_link.group(5)
 
+  #print(p_user,p_id)
+  L = instaloader.Instaloader() 
+  username, password = await get_info(msg.from_user.id)
+  if not username:
+    username = INSTA_USERNAME
+    password = INSTA_PASSWORD
+  L.login(user=username,passwd=password)
+
+
+  profilee = Profile.from_username(L.context,p_user)
+
+  pattern = re.compile(r'^<Profile ([A-Za-z0-9-_]+) [(]([A-Za-z0-9-_]+)[)]>')
+  matches = pattern.search(str(profilee))
+  #p_user = matches.group(1)
+  p_ids = matches.group(2)
+  id_int = int(p_ids)
+  for story in L.get_stories(userids=[id_int]):
+      # story is a Story object
+      pattern32 = re.compile(r'^<Story by [A-Za-z0-9-_]+ changed ([A-Za-z0-9-_]+)>')
+      mat = pattern32.search(str(story))
+      utc = mat.group(1)
+      for items in story.get_items():
+          # item is a StoryItem object
+          pattern2 = re.compile(r'^<StoryItem ([A-Za-z0-9-_]+)>')
+          mat = pattern2.search(str(items))
+          media_id = mat.group(1)
+          
+          if media_id == p_id :
+
+            L.download_storyitem(items,utc)
+            files = os.listdir(utc)
+            for file in files:
+              if file.endswith(".jpg"):
+                print("--------------------")
+                print(utc+'/'+file)
+                await msg.reply('get pic')
+                await msg.reply_photo(utc+'/'+file, "@masoudartwork")
+                print("--------------------")
+              if file.endswith(".mp4"):
+                print("--------------------")
+                print(utc+'/'+file)
+                await msg.reply('get mp4')
+                await msg.reply_video(utc+'/'+file, "@masoudartwork")
+                print("--------------------")
+              
+          shutil.rmtree(utc)    
+          break
 error = """
 Please send me a valid instagram post link.
 It must be like one of the given below
