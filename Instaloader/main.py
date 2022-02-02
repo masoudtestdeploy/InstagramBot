@@ -61,8 +61,8 @@ async def main(_, msg):
                             await msg.reply('get mp4')
                             await msg.reply_video(utc+'/'+file, "@masoudartwork")
                             print("--------------------")
-                shutil.rmtree(utc)    
-                brea
+                    shutil.rmtree(utc)    
+                break
     elif 'instagram.com' in msg.text:
         
         status = await msg.reply('Please Wait...', quote=True)
@@ -114,7 +114,7 @@ async def main(_, msg):
                         await msg.reply_video(video)
                         print(video)
                 if caption:
-                    await msg.reply(f"**POST CAPTION : **\n\n{caption} \n\nBy @masoudartwork")
+                    await msg.reply(f"**کپشن پست : **\n\n{caption} \n\nBy @masoudartwork")
             await status.delete()
             shutil.rmtree(path)
         except AttributeError:
